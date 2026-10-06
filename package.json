@@ -1,0 +1,12 @@
+{
+  "name": "pratica-09-kubernetes-minikube",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Captura automatizada do Kubernetes Dashboard para a Prática 09",
+  "scripts": {
+    "capture": "node scripts/capturar-dashboard.js"
+  },
+  "dependencies": {
+    "playwright": "1.49.1"
+  }
+}

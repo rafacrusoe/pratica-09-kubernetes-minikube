@@ -1,0 +1,4 @@
+node_modules/
+evidencias/*
+!evidencias/.gitkeep
+npm-debug.log*
