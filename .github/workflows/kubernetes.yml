@@ -1,0 +1,60 @@
+name: Prática 09 - Kubernetes com Minikube
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  kubernetes:
+    name: Instalação, cluster, deploy, escala e dashboard
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+
+    steps:
+      - name: Baixar o repositório
+        uses: actions/checkout@v4
+
+      - name: Preparar a captura do dashboard
+        run: |
+          npm install --no-audit --no-fund
+          npx playwright install --with-deps chromium
+
+      - name: Validar os arquivos
+        run: |
+          chmod +x scripts/*.sh
+          bash -n scripts/run-pratica.sh
+          kubectl apply --dry-run=client -f kubernetes/dashboard-adminuser.yaml
+
+      - name: Executar a prática completa
+        run: bash scripts/run-pratica.sh
+
+      - name: Conferir as evidências
+        run: |
+          test -s evidencias/01-dashboard-uma-replica.png
+          test -s evidencias/02-dashboard-tres-replicas.png
+          test -s evidencias/03-dashboard-recursos-e-logs.png
+          grep -q 'HTTP/1.1 200' evidencias/10-nginx-http.txt
+          grep -q 'nginx' evidencias/18-nginx-status-3-replicas.txt
+          grep -q '3/3' evidencias/18-nginx-status-3-replicas.txt
+          file evidencias/*.png
+          find evidencias -maxdepth 1 -type f -printf '%p %s bytes\n' | sort
+
+      - name: Publicar evidências da prática
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: evidencias-pratica-09
+          path: evidencias/
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Diagnóstico em caso de falha
+        if: failure()
+        run: |
+          minikube status || true
+          kubectl get all -A -o wide || true
+          kubectl get events -A --sort-by=.metadata.creationTimestamp || true
