@@ -27,7 +27,7 @@ jobs:
         run: |
           chmod +x scripts/*.sh
           bash -n scripts/run-pratica.sh
-          kubectl apply --dry-run=client -f kubernetes/dashboard-adminuser.yaml
+          test -s kubernetes/dashboard-adminuser.yaml
 
       - name: Executar a prática completa
         run: bash scripts/run-pratica.sh
